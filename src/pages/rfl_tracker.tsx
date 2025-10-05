@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Calendar,
   Plus,
@@ -22,8 +22,17 @@ import {
   Bar,
 } from "recharts";
 
+interface JournalEntry {
+  date: string;
+  weight: string;
+  protein: string;
+  exerciseType: string;
+  exerciseIntensity: string;
+  notes: string;
+}
+
 export default function RFLDietJournal() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [currentPage, setCurrentPage] = useState("journal");
 
   const [currentEntry, setCurrentEntry] = useState({
@@ -49,7 +58,7 @@ export default function RFLDietJournal() {
     } else {
       setEntries(
         [currentEntry, ...entries].sort(
-          (a, b) => new Date(b.date) - new Date(a.date),
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         ),
       );
     }
@@ -65,30 +74,30 @@ export default function RFLDietJournal() {
     setShowForm(false);
   };
 
-  const handleEdit = (entry) => {
+  const handleEdit = (entry: JournalEntry) => {
     setCurrentEntry(entry);
     setShowForm(true);
   };
 
-  const handleDelete = (date) => {
+  const handleDelete = (date: string) => {
     setEntries(entries.filter((entry) => entry.date !== date));
   };
 
   const getWeightTrend = () => {
     if (entries.length < 2) return null;
     const sorted = [...entries].sort(
-      (a, b) => new Date(a.date) - new Date(b.date),
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
     const recent = sorted.slice(-7).filter((e) => e.weight);
     if (recent.length < 2) return null;
-    const change = recent[recent.length - 1].weight - recent[0].weight;
+    const change = parseFloat(recent[recent.length - 1].weight) - parseFloat(recent[0].weight);
     return change;
   };
 
   const getChartData = () => {
     return [...entries]
       .filter((e) => e.weight || e.protein)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map((e) => ({
         date: new Date(e.date).toLocaleDateString("en-US", {
           month: "short",
@@ -102,7 +111,7 @@ export default function RFLDietJournal() {
   const getExerciseData = () => {
     return [...entries]
       .filter((e) => e.exerciseType)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map((e) => ({
         date: new Date(e.date).toLocaleDateString("en-US", {
           month: "short",
@@ -299,7 +308,7 @@ export default function RFLDietJournal() {
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      rows="3"
+                      rows={3}
                       placeholder="How are you feeling? Energy levels? Hunger?"
                     />
                   </div>
